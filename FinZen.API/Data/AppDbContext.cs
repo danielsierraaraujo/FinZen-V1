@@ -11,6 +11,7 @@ namespace FinZen.API.Data
 
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Transaccion> Transacciones { get; set; }
+        public DbSet<Meta> Metas { get; set; }  // ← agrega esta línea
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -21,6 +22,20 @@ namespace FinZen.API.Data
 
             modelBuilder.Entity<Transaccion>()
                 .Property(t => t.Monto)
+                .HasPrecision(18, 2);
+
+            // Relación Meta → Usuario
+            modelBuilder.Entity<Meta>()
+                .HasOne(m => m.Usuario)
+                .WithMany()
+                .HasForeignKey(m => m.UsuarioId);
+
+            modelBuilder.Entity<Meta>()
+                .Property(m => m.MontoObjetivo)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Meta>()
+                .Property(m => m.MontoActual)
                 .HasPrecision(18, 2);
         }
     }

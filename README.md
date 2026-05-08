@@ -101,4 +101,4 @@ El frontend corre en `http://localhost:5173`
 
 ## 👨‍💻 Autor
 
-Desarrollado por **Daniel** — Ingeniería Web
+Desarrollado por **Daniel Sierra** — Materia de Ingeniería Web

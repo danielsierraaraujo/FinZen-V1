@@ -114,6 +114,7 @@ C:\Users\danie\FinZen\FinZen.API\obj\Debug\net10.0\FinZen.API.AssemblyInfo.cs
 C:\Users\danie\FinZen\FinZen.API\obj\Debug\net10.0\FinZen.API.csproj.CoreCompileInputs.cache
 C:\Users\danie\FinZen\FinZen.API\obj\Debug\net10.0\FinZen.API.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\danie\FinZen\FinZen.API\obj\Debug\net10.0\FinZen.API.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\danie\FinZen\FinZen.API\obj\Debug\net10.0\FinZen.API.sourcelink.json
 C:\Users\danie\FinZen\FinZen.API\obj\Debug\net10.0\rjimswa.dswa.cache.json
 C:\Users\danie\FinZen\FinZen.API\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 C:\Users\danie\FinZen\FinZen.API\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
