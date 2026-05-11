@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Transacciones from './pages/Transacciones'
+import Metas from './pages/Metas'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -14,6 +15,14 @@ function App() {
                     element={
                         <ProtectedRoute>
                             <Transacciones />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/metas"
+                    element={
+                        <ProtectedRoute>
+                            <Metas />
                         </ProtectedRoute>
                     }
                 />

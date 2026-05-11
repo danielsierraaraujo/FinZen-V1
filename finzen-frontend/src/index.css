@@ -357,3 +357,130 @@ body {
         padding: 16px;
     }
 }
+
+/* ===== METAS ===== */
+.metas-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.btn-nav {
+    padding: 8px 16px;
+    background-color: #eff6ff;
+    color: #2563eb;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-nav:hover {
+    background-color: #dbeafe;
+}
+
+/* ===== LISTA DE METAS ===== */
+.lista-metas {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.meta-item {
+    background-color: white;
+    border-radius: 12px;
+    padding: 16px 20px;
+    border-left: 4px solid #2563eb;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.meta-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.meta-info strong {
+    font-size: 15px;
+    color: #1a1a2e;
+}
+
+.meta-info span {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+/* ===== BARRA DE PROGRESO ===== */
+.meta-progreso {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.meta-progreso span {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.barra-fondo {
+    width: 100%;
+    height: 8px;
+    background-color: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.barra-progreso {
+    height: 100%;
+    background-color: #2563eb;
+    border-radius: 999px;
+    transition: width 0.5s ease;
+}
+
+/* ===== RESULTADO ALGORITMO ===== */
+.resultado-algoritmo {
+    margin-top: 24px;
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.resultado-algoritmo h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #16a34a;
+    margin-bottom: 8px;
+}
+
+.resultado-algoritmo p {
+    font-size: 13px;
+    color: #374151;
+    margin-bottom: 12px;
+}
+
+.resultado-algoritmo ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.resultado-algoritmo li {
+    font-size: 13px;
+    color: #374151;
+    padding: 8px 12px;
+    background-color: white;
+    border-radius: 8px;
+}
+
+
+.resultado-algoritmo li strong {
+    color: #1a1a2e;
+}
