@@ -20,13 +20,36 @@ namespace FinZen.API.Services
             _configuration = configuration;
         }
 
-        public async Task<AuthResponseDTO?> Register(RegisterDTO dto)
+        private string? ValidarPassword(string password)
         {
+            if (string.IsNullOrWhiteSpace(password))
+                return "La contraseña no puede estar vacía";
+
+            if (password.Length < 8)
+                return "La contraseña debe tener al menos 8 caracteres";
+
+            if (!password.Any(char.IsUpper))
+                return "La contraseña debe tener al menos una mayúscula";
+
+            if (!password.Any(char.IsDigit))
+                return "La contraseña debe tener al menos un número";
+
+            return null;
+        }
+
+        public async Task<(AuthResponseDTO? respuesta, string? error)> Register(RegisterDTO dto)
+        {
+            // Validar contraseña
+            var errorPassword = ValidarPassword(dto.Password);
+            if (errorPassword != null)
+                return (null, errorPassword);
+
+            // Validar email único
             bool emailExiste = await _context.Usuarios
                 .AnyAsync(u => u.Email == dto.Email);
 
             if (emailExiste)
-                return null;
+                return (null, "El email ya está registrado");
 
             var usuario = new Usuario
             {
@@ -38,12 +61,12 @@ namespace FinZen.API.Services
             _context.Usuarios.Add(usuario);
             await _context.SaveChangesAsync();
 
-            return new AuthResponseDTO
+            return (new AuthResponseDTO
             {
                 Token = GenerarToken(usuario),
                 Nombre = usuario.Nombre,
                 Email = usuario.Email
-            };
+            }, null);
         }
 
         public async Task<AuthResponseDTO?> Login(LoginDTO dto)

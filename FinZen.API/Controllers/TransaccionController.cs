@@ -26,13 +26,13 @@ namespace FinZen.API.Controllers
             return int.Parse(claim!);
         }
 
-        // GET api/transaccion
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var usuarioId = ObtenerUsuarioId();
 
             var transacciones = await _context.Transacciones
+                .Include(t => t.Categoria)
                 .Where(t => t.UsuarioId == usuarioId)
                 .Select(t => new TransaccionResponseDTO
                 {
@@ -40,7 +40,7 @@ namespace FinZen.API.Controllers
                     Descripcion = t.Descripcion,
                     Monto = t.Monto,
                     Tipo = t.Tipo.ToString(),
-                    Categoria = t.Categoria,
+                    CategoriaNombre = t.Categoria.Nombre,
                     Fecha = t.Fecha
                 })
                 .ToListAsync();
@@ -48,51 +48,66 @@ namespace FinZen.API.Controllers
             return Ok(transacciones);
         }
 
-        // POST api/transaccion
         [HttpPost]
         public async Task<IActionResult> Create(CrearTransaccionDTO dto)
         {
             var usuarioId = ObtenerUsuarioId();
+
+            var categoriaExiste = await _context.Categorias
+                .AnyAsync(c => c.Id == dto.CategoriaId);
+
+            if (!categoriaExiste)
+                return BadRequest(new { mensaje = "La categoría no existe" });
 
             var transaccion = new Transaccion
             {
                 Descripcion = dto.Descripcion,
                 Monto = dto.Monto,
                 Tipo = Enum.Parse<TipoTransaccion>(dto.Tipo),
-                Categoria = dto.Categoria,
+                CategoriaId = dto.CategoriaId,
                 UsuarioId = usuarioId
             };
 
             _context.Transacciones.Add(transaccion);
             await _context.SaveChangesAsync();
 
+            await _context.Entry(transaccion)
+                .Reference(t => t.Categoria)
+                .LoadAsync();
+
             return Ok(new TransaccionResponseDTO
             {
                 Id = transaccion.Id,
                 Descripcion = transaccion.Descripcion,
                 Monto = transaccion.Monto,
                 Tipo = transaccion.Tipo.ToString(),
-                Categoria = transaccion.Categoria,
+                CategoriaNombre = transaccion.Categoria.Nombre,
                 Fecha = transaccion.Fecha
             });
         }
 
-        // PUT api/transaccion/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, CrearTransaccionDTO dto)
         {
             var usuarioId = ObtenerUsuarioId();
 
             var transaccion = await _context.Transacciones
+                .Include(t => t.Categoria)
                 .FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
 
             if (transaccion == null)
                 return NotFound(new { mensaje = "Transacción no encontrada" });
 
+            var categoriaExiste = await _context.Categorias
+                .AnyAsync(c => c.Id == dto.CategoriaId);
+
+            if (!categoriaExiste)
+                return BadRequest(new { mensaje = "La categoría no existe" });
+
             transaccion.Descripcion = dto.Descripcion;
             transaccion.Monto = dto.Monto;
             transaccion.Tipo = Enum.Parse<TipoTransaccion>(dto.Tipo);
-            transaccion.Categoria = dto.Categoria;
+            transaccion.CategoriaId = dto.CategoriaId;
 
             await _context.SaveChangesAsync();
 
@@ -102,12 +117,11 @@ namespace FinZen.API.Controllers
                 Descripcion = transaccion.Descripcion,
                 Monto = transaccion.Monto,
                 Tipo = transaccion.Tipo.ToString(),
-                Categoria = transaccion.Categoria,
+                CategoriaNombre = transaccion.Categoria.Nombre,
                 Fecha = transaccion.Fecha
             });
         }
 
-        // DELETE api/transaccion/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

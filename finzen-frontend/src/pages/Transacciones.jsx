@@ -4,10 +4,11 @@ import api from '../services/api'
 
 function Transacciones() {
     const [transacciones, setTransacciones] = useState([])
+    const [categoriasLista, setCategoriasLista] = useState([]) // NUEVO: Estado para guardar las categorías de la BD
     const [descripcion, setDescripcion] = useState('')
     const [monto, setMonto] = useState('')
     const [tipo, setTipo] = useState('Gasto')
-    const [categoria, setCategoria] = useState('')
+    const [categoriaId, setCategoriaId] = useState('') // MODIFICADO: Ahora guardamos el ID, no el texto
     const [editandoId, setEditandoId] = useState(null)
     const [error, setError] = useState('')
     const nombre = localStorage.getItem('nombre')
@@ -15,6 +16,7 @@ function Transacciones() {
 
     useEffect(() => {
         cargarTransacciones()
+        cargarCategorias() // NUEVO: Cargar categorías al inicio
     }, [])
 
     const cargarTransacciones = async () => {
@@ -26,11 +28,38 @@ function Transacciones() {
         }
     }
 
+    // NUEVO: Función para traer las categorías desde el backend
+    const cargarCategorias = async () => {
+        try {
+            const respuesta = await api.get('/categoria')
+            setCategoriasLista(respuesta.data)
+        } catch (err) {
+            console.error('Error al cargar categorías', err)
+        }
+    }
+
+    // NUEVO: Lógica que filtra las categorías dependiendo si es Gasto o Ingreso (y Ambos)
+    const categoriasFiltradas = categoriasLista.filter(
+        c => c.tipo === tipo || c.tipo === 'Ambos'
+    )
+
+    // NUEVO: Cuando el usuario cambia el tipo, limpiamos la categoría seleccionada
+    const handleTipoChange = (e) => {
+        setTipo(e.target.value)
+        setCategoriaId('') 
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         setError('')
 
-        const datos = { descripcion, monto: parseFloat(monto), tipo, categoria }
+        // MODIFICADO: El backend ahora espera "categoriaId" como número
+        const datos = { 
+            descripcion, 
+            monto: parseFloat(monto), 
+            tipo, 
+            categoriaId: parseInt(categoriaId) 
+        }
 
         try {
             if (editandoId) {
@@ -50,7 +79,10 @@ function Transacciones() {
         setDescripcion(transaccion.descripcion)
         setMonto(transaccion.monto)
         setTipo(transaccion.tipo)
-        setCategoria(transaccion.categoria)
+        
+        // MODIFICADO: Buscamos el ID de la categoría basándonos en el nombre que devuelve el backend
+        const catEncontrada = categoriasLista.find(c => c.nombre === transaccion.categoriaNombre)
+        setCategoriaId(catEncontrada ? catEncontrada.id : '')
     }
 
     const handleEliminar = async (id) => {
@@ -67,7 +99,7 @@ function Transacciones() {
         setDescripcion('')
         setMonto('')
         setTipo('Gasto')
-        setCategoria('')
+        setCategoriaId('') // MODIFICADO
         setEditandoId(null)
     }
 
@@ -125,7 +157,7 @@ function Transacciones() {
                             <select
                                 id="tipo"
                                 value={tipo}
-                                onChange={(e) => setTipo(e.target.value)}
+                                onChange={handleTipoChange} /* MODIFICADO: Usa la nueva función */
                             >
                                 <option value="Gasto">Gasto</option>
                                 <option value="Ingreso">Ingreso</option>
@@ -134,14 +166,21 @@ function Transacciones() {
 
                         <div className="campo-grupo">
                             <label htmlFor="categoria">Categoría</label>
-                            <input
-                                type="text"
+                            {/* MODIFICADO: Pasó de ser un <input> de texto a un <select> dinámico */}
+                            <select
                                 id="categoria"
-                                value={categoria}
-                                onChange={(e) => setCategoria(e.target.value)}
-                                placeholder="Ej: Comida, Salario..."
+                                value={categoriaId}
+                                onChange={(e) => setCategoriaId(e.target.value)}
+                                disabled={!tipo}
                                 required
-                            />
+                            >
+                                <option value="" disabled>Selecciona una categoría...</option>
+                                {categoriasFiltradas.map(c => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.nombre}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         {error && <p className="error-msg">{error}</p>}
@@ -175,7 +214,8 @@ function Transacciones() {
                                 <li key={t.id} className={`transaccion-item ${t.tipo.toLowerCase()}`}>
                                     <section className="transaccion-info">
                                         <strong>{t.descripcion}</strong>
-                                        <span className="categoria">{t.categoria}</span>
+                                        {/* MODIFICADO: El DTO ahora devuelve categoriaNombre */}
+                                        <span className="categoria">{t.categoriaNombre}</span>
                                     </section>
                                     <section className="transaccion-derecha">
                                         <span className="monto">

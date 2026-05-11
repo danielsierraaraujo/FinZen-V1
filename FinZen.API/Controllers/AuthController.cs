@@ -18,10 +18,10 @@ namespace FinZen.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDTO dto)
         {
-            var resultado = await _authService.Register(dto);
+            var (resultado, error) = await _authService.Register(dto);
 
-            if (resultado == null)
-                return BadRequest(new { mensaje = "El email ya está registrado" });
+            if (error != null)
+                return BadRequest(new { mensaje = error });
 
             return Ok(resultado);
         }

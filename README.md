@@ -20,38 +20,6 @@ Aplicación web de finanzas personales para registrar ingresos y gastos, desarro
 - ✅ Clasificación por categoría
 - ✅ Cierre de sesión
 
-## 🏗️ Arquitectura
-
-El proyecto sigue el patrón **MVC (Modelo - Vista - Controlador)**:
-
-FinZen/
-├── FinZen.API/                        → Backend (.NET Core)
-│   ├── Controllers/                   → Reciben peticiones HTTP
-│   │   ├── AuthController.cs          → Login y registro
-│   │   └── TransaccionController.cs   → CRUD de transacciones
-│   ├── Models/                        → Representan las tablas
-│   │   ├── Usuario.cs
-│   │   └── Transaccion.cs
-│   ├── Data/
-│   │   └── AppDbContext.cs            → Contexto de base de datos
-│   ├── Services/
-│   │   └── AuthService.cs            → Lógica de negocio
-│   ├── DTOs/
-│   │   ├── AuthDTOs.cs
-│   │   └── TransaccionDTOs.cs
-│   └── Program.cs                    → Punto de entrada
-│
-└── finzen-frontend/                  → Frontend (React)
-└── src/
-├── pages/
-│   ├── Login.jsx
-│   └── Transacciones.jsx
-├── components/
-│   └── ProtectedRoute.jsx
-├── services/
-│   └── api.js
-└── App.jsx
-
 ## ⚙️ Instalación y configuración
 
 ### Requisitos previos
@@ -98,6 +66,66 @@ El frontend corre en `http://localhost:5173`
 | POST | /api/transaccion | Crear transacción |
 | PUT | /api/transaccion/{id} | Actualizar transacción |
 | DELETE | /api/transaccion/{id} | Eliminar transacción |
+
+
+## 🎯 Cumplimiento de Requisitos (Administración Core)
+
+Este proyecto cumple con los lineamientos solicitados para la administración del core:
+
+1. **Validación Back-End (Dato Sensible):** La contraseña de los usuarios (dato crítico) es validada y procesada estrictamente en el backend mediante el `AuthService` y `AuthController` antes de interactuar con la base de datos. La seguridad no depende del lado del cliente (JS).
+2. **Relación de Tablas (Dropdowns Dinámicos):** Al ingresar una nueva transacción, la llave foránea (`CategoriaId`) no se ingresa manualmente. El formulario cuenta con dropdowns relacionados: al seleccionar el "Tipo" de transacción (Ingreso/Gasto), el sistema realiza una petición al backend y carga dinámicamente el dropdown de "Categorías" mostrando únicamente las opciones pertenecientes a ese tipo.
+3. **Versionado y Deploy:** Código versionado correctamente en Git y aplicación funcional desplegada en la nube con este archivo README estructurado.
+
+## 🛠️ Tecnologías utilizadas
+
+- **Backend:** .NET Core 10 - Web API
+- **Frontend:** React + Vite
+- **Base de datos:** PostgreSQL
+- **ORM:** Entity Framework Core
+- **Autenticación:** JWT (JSON Web Tokens)
+- **Estilos:** CSS puro
+
+## 📋 Funcionalidades
+
+- ✅ Registro e inicio de sesión con JWT
+- ✅ Rutas protegidas (no accesibles sin autenticación)
+- ✅ CRUD completo de transacciones
+- ✅ Clasificación de transacciones por tipo (Ingreso/Gasto) con carga dinámica de categorías.
+- ✅ Cierre de sesión
+
+## 🏗️ Arquitectura
+
+El proyecto sigue el patrón **MVC (Modelo - Vista - Controlador)**:
+
+FinZen/
+├── FinZen.API/                        → Backend (.NET Core)
+│   ├── Controllers/                   → Reciben peticiones HTTP
+│   │   ├── AuthController.cs          → Login y registro
+│   │   ├── TransaccionController.cs   → CRUD de transacciones
+│   │   └── CategoriaController.cs     → Carga dinámica de categorías
+│   ├── Models/                        → Representan las tablas
+│   │   ├── Usuario.cs
+│   │   ├── Transaccion.cs
+│   │   └── Categoria.cs               → Tabla relacional
+│   ├── Data/
+│   │   └── AppDbContext.cs            → Contexto de BD y Data Seeding
+│   ├── Services/
+│   │   └── AuthService.cs             → Lógica de negocio y encriptación
+│   ├── DTOs/
+│   │   ├── AuthDTOs.cs
+│   │   └── TransaccionDTOs.cs
+│   └── Program.cs                     → Punto de entrada
+│
+└── finzen-frontend/                   → Frontend (React)
+    └── src/
+        ├── pages/
+        │   ├── Login.jsx
+        │   └── Transacciones.jsx      → Contiene la lógica de dropdowns dependientes
+        ├── components/
+        │   └── ProtectedRoute.jsx
+        ├── services/
+        │   └── api.js
+        └── App.jsx
 
 ## 👨‍💻 Autor
 

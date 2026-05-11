@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FinZen.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3c8d5ebc0a1c6ec823e7140cfa1cc0f82271eebb")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+44b7713ec1724fdb1358e365d937b964c28f5bb0")]
 [assembly: System.Reflection.AssemblyProductAttribute("FinZen.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FinZen.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
