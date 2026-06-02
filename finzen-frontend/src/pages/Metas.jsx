@@ -28,7 +28,7 @@ function Metas() {
 
     const cargarMetas = async () => {
         try {
-            const respuesta = await api.get('/meta')
+            const respuesta = await api.get('/api/meta')
             setMetas(respuesta.data)
         } catch (err) {
             setError('Error al cargar metas')
@@ -49,9 +49,9 @@ function Metas() {
 
         try {
             if (editandoId) {
-                await api.put(`/meta/${editandoId}`, datos)
+                await api.put(`/api/meta/${editandoId}`, datos)
             } else {
-                await api.post('/meta', datos)
+                await api.post('/api/meta', datos)
             }
             limpiarFormulario()
             cargarMetas()
@@ -72,7 +72,7 @@ function Metas() {
     const handleEliminar = async (id) => {
         if (!window.confirm('¿Eliminar esta meta?')) return
         try {
-            await api.delete(`/meta/${id}`)
+            await api.delete(`/api/meta/${id}`)
             cargarMetas()
         } catch (err) {
             setError('Error al eliminar')
@@ -83,7 +83,7 @@ function Metas() {
     const calcularExcedente = async () => {
         setCargandoExcedente(true)
         try {
-            const respuesta = await api.get('/transaccion/excedente-mes')
+            const respuesta = await api.get('/api/transaccion/excedente-mes')
             setExcedenteMes(respuesta.data)
             // Autocompleta el input con el excedente calculado
             setExcedente(respuesta.data.excedente) 
@@ -100,7 +100,7 @@ function Metas() {
         setResultado(null)
 
         try {
-            const respuesta = await api.post('/meta/asignar', {
+            const respuesta = await api.post('/api/meta/asignar', {
                 excedente: parseFloat(excedente),
                 estrategia
             })
