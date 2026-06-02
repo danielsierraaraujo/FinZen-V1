@@ -35,14 +35,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FinZenPolicy", policy =>
-    {
-        policy.WithOrigins(
-                "http://localhost:5173", // Para tus pruebas locales
-                "https://fin-zen-v1-fbk8xyjat-danielsierraaraujos-projects.vercel.app" // Tu URL real de Vercel
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
+{
+    policy.AllowAnyOrigin()    // Esto deja entrar a CUALQUIER dominio de Vercel
+          .AllowAnyHeader()
+          .AllowAnyMethod();
+});
 });
 
 // 5. Controladores
