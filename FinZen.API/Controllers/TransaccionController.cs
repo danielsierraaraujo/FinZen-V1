@@ -138,5 +138,36 @@ namespace FinZen.API.Controllers
 
             return Ok(new { mensaje = "Transacción eliminada correctamente" });
         }
+
+        // GET api/transaccion/excedente-mes
+[HttpGet("excedente-mes")]
+public async Task<IActionResult> GetExcedenteMes()
+{
+    var usuarioId = ObtenerUsuarioId();
+    var ahora = DateTime.UtcNow;
+    var inicioMes = new DateTime(ahora.Year, ahora.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+
+    var transaccionesMes = await _context.Transacciones
+        .Where(t => t.UsuarioId == usuarioId && t.Fecha >= inicioMes)
+        .ToListAsync();
+
+    decimal totalIngresos = transaccionesMes
+        .Where(t => t.Tipo == TipoTransaccion.Ingreso)
+        .Sum(t => t.Monto);
+
+    decimal totalGastos = transaccionesMes
+        .Where(t => t.Tipo == TipoTransaccion.Gasto)
+        .Sum(t => t.Monto);
+
+    decimal excedente = totalIngresos - totalGastos;
+
+    return Ok(new
+    {
+        mes = ahora.ToString("MMMM yyyy"),
+        totalIngresos,
+        totalGastos,
+        excedente = excedente > 0 ? excedente : 0
+    });
+}
     }
 }

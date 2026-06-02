@@ -3,6 +3,7 @@ import Login from './pages/Login'
 import Transacciones from './pages/Transacciones'
 import Metas from './pages/Metas'
 import ProtectedRoute from './components/ProtectedRoute'
+import Dashboard from './pages/Dashboard'
 
 function App() {
     return (
@@ -23,6 +24,14 @@ function App() {
                     element={
                         <ProtectedRoute>
                             <Metas />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <Dashboard />
                         </ProtectedRoute>
                     }
                 />

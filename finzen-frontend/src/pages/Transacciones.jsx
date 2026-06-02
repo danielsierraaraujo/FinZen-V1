@@ -1,22 +1,25 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import Graficas from '../components/Graficas'
 
 function Transacciones() {
     const [transacciones, setTransacciones] = useState([])
-    const [categoriasLista, setCategoriasLista] = useState([]) // NUEVO: Estado para guardar las categorías de la BD
+    const [categorias, setCategorias] = useState([])
     const [descripcion, setDescripcion] = useState('')
     const [monto, setMonto] = useState('')
     const [tipo, setTipo] = useState('Gasto')
-    const [categoriaId, setCategoriaId] = useState('') // MODIFICADO: Ahora guardamos el ID, no el texto
+    const [categoriaId, setCategoriaId] = useState('')
     const [editandoId, setEditandoId] = useState(null)
     const [error, setError] = useState('')
     const nombre = localStorage.getItem('nombre')
     const navigate = useNavigate()
+    const [excedenteMes, setExcedenteMes] = useState(null)
 
     useEffect(() => {
         cargarTransacciones()
-        cargarCategorias() // NUEVO: Cargar categorías al inicio
+        cargarCategorias()
+        cargarExcedente()
     }, [])
 
     const cargarTransacciones = async () => {
@@ -28,37 +31,28 @@ function Transacciones() {
         }
     }
 
-    // NUEVO: Función para traer las categorías desde el backend
     const cargarCategorias = async () => {
         try {
             const respuesta = await api.get('/categoria')
-            setCategoriasLista(respuesta.data)
+            setCategorias(respuesta.data)
         } catch (err) {
-            console.error('Error al cargar categorías', err)
+            setError('Error al cargar categorías')
         }
     }
 
-    // NUEVO: Lógica que filtra las categorías dependiendo si es Gasto o Ingreso (y Ambos)
-    const categoriasFiltradas = categoriasLista.filter(
-        c => c.tipo === tipo || c.tipo === 'Ambos'
+    const categoriasFiltradas = categorias.filter(c =>
+        c.tipo === tipo || c.tipo === 'Ambos'
     )
-
-    // NUEVO: Cuando el usuario cambia el tipo, limpiamos la categoría seleccionada
-    const handleTipoChange = (e) => {
-        setTipo(e.target.value)
-        setCategoriaId('') 
-    }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         setError('')
 
-        // MODIFICADO: El backend ahora espera "categoriaId" como número
-        const datos = { 
-            descripcion, 
-            monto: parseFloat(monto), 
-            tipo, 
-            categoriaId: parseInt(categoriaId) 
+        const datos = {
+            descripcion,
+            monto: parseFloat(monto),
+            tipo,
+            categoriaId: parseInt(categoriaId)
         }
 
         try {
@@ -79,14 +73,11 @@ function Transacciones() {
         setDescripcion(transaccion.descripcion)
         setMonto(transaccion.monto)
         setTipo(transaccion.tipo)
-        
-        // MODIFICADO: Buscamos el ID de la categoría basándonos en el nombre que devuelve el backend
-        const catEncontrada = categoriasLista.find(c => c.nombre === transaccion.categoriaNombre)
-        setCategoriaId(catEncontrada ? catEncontrada.id : '')
+        setCategoriaId(transaccion.categoriaId)
     }
 
     const handleEliminar = async (id) => {
-        if (!window.confirm('¿Seguro que deseas eliminar esta transacción?')) return
+        if (!window.confirm('¿Seguro que deseas eliminar?')) return
         try {
             await api.delete(`/transaccion/${id}`)
             cargarTransacciones()
@@ -99,7 +90,7 @@ function Transacciones() {
         setDescripcion('')
         setMonto('')
         setTipo('Gasto')
-        setCategoriaId('') // MODIFICADO
+        setCategoriaId('')
         setEditandoId(null)
     }
 
@@ -109,12 +100,25 @@ function Transacciones() {
         navigate('/login')
     }
 
+    const cargarExcedente = async () => {
+        try {
+            const respuesta = await api.get('/transaccion/excedente-mes')
+            setExcedenteMes(respuesta.data)
+        } catch (err) {
+            console.log('Error al cargar excedente')
+        }
+    }
+
     return (
+    
         <main className="transacciones-container">
             <header className="transacciones-header">
                 <h1>FinZen 💰</h1>
                 <section className="header-derecho">
                     <p>Hola, <strong>{nombre}</strong></p>
+                    <button onClick={() => navigate('/metas')} className="btn-nav">
+                        Metas
+                    </button>
                     <button onClick={handleLogout} className="btn-logout">
                         Cerrar Sesión
                     </button>
@@ -157,7 +161,10 @@ function Transacciones() {
                             <select
                                 id="tipo"
                                 value={tipo}
-                                onChange={handleTipoChange} /* MODIFICADO: Usa la nueva función */
+                                onChange={(e) => {
+                                    setTipo(e.target.value)
+                                    setCategoriaId('')
+                                }}
                             >
                                 <option value="Gasto">Gasto</option>
                                 <option value="Ingreso">Ingreso</option>
@@ -166,18 +173,16 @@ function Transacciones() {
 
                         <div className="campo-grupo">
                             <label htmlFor="categoria">Categoría</label>
-                            {/* MODIFICADO: Pasó de ser un <input> de texto a un <select> dinámico */}
                             <select
                                 id="categoria"
                                 value={categoriaId}
                                 onChange={(e) => setCategoriaId(e.target.value)}
-                                disabled={!tipo}
                                 required
                             >
-                                <option value="" disabled>Selecciona una categoría...</option>
-                                {categoriasFiltradas.map(c => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.nombre}
+                                <option value="">Selecciona una categoría</option>
+                                {categoriasFiltradas.map((cat) => (
+                                    <option key={cat.id} value={cat.id}>
+                                        {cat.nombre}
                                     </option>
                                 ))}
                             </select>
@@ -214,7 +219,6 @@ function Transacciones() {
                                 <li key={t.id} className={`transaccion-item ${t.tipo.toLowerCase()}`}>
                                     <section className="transaccion-info">
                                         <strong>{t.descripcion}</strong>
-                                        {/* MODIFICADO: El DTO ahora devuelve categoriaNombre */}
                                         <span className="categoria">{t.categoriaNombre}</span>
                                     </section>
                                     <section className="transaccion-derecha">
@@ -243,6 +247,11 @@ function Transacciones() {
                 </section>
 
             </section>
+
+            <Graficas
+                transacciones={transacciones}
+                excedenteMes={excedenteMes}
+            />
         </main>
     )
 }

@@ -14,6 +14,11 @@ function Metas() {
     const [estrategia, setEstrategia] = useState('prioridad')
     const [resultado, setResultado] = useState(null)
     const [error, setError] = useState('')
+    
+    // --- NUEVOS ESTADOS PARA EL SMART ALLOCATOR ---
+    const [excedenteMes, setExcedenteMes] = useState(null)
+    const [cargandoExcedente, setCargandoExcedente] = useState(false)
+    
     const nombre_usuario = localStorage.getItem('nombre')
     const navigate = useNavigate()
 
@@ -71,6 +76,21 @@ function Metas() {
             cargarMetas()
         } catch (err) {
             setError('Error al eliminar')
+        }
+    }
+
+    // --- NUEVA FUNCIÓN PARA CALCULAR EXCEDENTE ---
+    const calcularExcedente = async () => {
+        setCargandoExcedente(true)
+        try {
+            const respuesta = await api.get('/transaccion/excedente-mes')
+            setExcedenteMes(respuesta.data)
+            // Autocompleta el input con el excedente calculado
+            setExcedente(respuesta.data.excedente) 
+        } catch (err) {
+            setError('Error al calcular excedente')
+        } finally {
+            setCargandoExcedente(false)
         }
     }
 
@@ -207,12 +227,30 @@ function Metas() {
                         </section>
                     </form>
 
-                    <hr style={{margin: '24px 0'}} />
-
+                    <hr style={{ margin: '24px 0' }} />
                     <h2>Smart Allocator 🧠</h2>
+
+                    <button
+                        type="button"
+                        onClick={calcularExcedente}
+                        className="btn-calcular"
+                        disabled={cargandoExcedente}
+                    >
+                        {cargandoExcedente ? 'Calculando...' : '📊 Calcular Excedente del Mes'}
+                    </button>
+
+                    {excedenteMes && (
+                        <div className="resumen-mes">
+                            <p>📅 <strong>{excedenteMes.mes}</strong></p>
+                            <p>📈 Ingresos: <strong>${excedenteMes.totalIngresos}</strong></p>
+                            <p>📉 Gastos: <strong>${excedenteMes.totalGastos}</strong></p>
+                            <p>💰 Excedente: <strong>${excedenteMes.excedente}</strong></p>
+                        </div>
+                    )}
+
                     <form onSubmit={handleAsignar}>
                         <div className="campo-grupo">
-                            <label htmlFor="excedente">Excedente del mes</label>
+                            <label htmlFor="excedente">Excedente a distribuir</label>
                             <input
                                 type="number"
                                 id="excedente"
@@ -225,7 +263,7 @@ function Metas() {
                         </div>
 
                         <div className="campo-grupo">
-                            <label htmlFor="estrategia">Estrategia</label>
+                            <label htmlFor="estrategia">Estrategia de distribución</label>
                             <select
                                 id="estrategia"
                                 value={estrategia}
@@ -238,7 +276,7 @@ function Metas() {
                         </div>
 
                         <button type="submit" className="btn-guardar">
-                            Ejecutar Algoritmo
+                            🚀 Ejecutar Smart Allocator
                         </button>
                     </form>
 
@@ -278,7 +316,7 @@ function Metas() {
                                         <div className="barra-fondo">
                                             <div
                                                 className="barra-progreso"
-                                                style={{width: `${Math.min(meta.porcentajeCompletado, 100)}%`}}
+                                                style={{ width: `${Math.min(meta.porcentajeCompletado, 100)}%` }}
                                             />
                                         </div>
                                         <span>${meta.montoActual} / ${meta.montoObjetivo}</span>
