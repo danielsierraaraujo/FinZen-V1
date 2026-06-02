@@ -15,7 +15,7 @@
             setError('')
 
             try {
-                const respuesta = await api.post('/auth/login', { email, password })
+            const respuesta = await api.post('/api/auth/login', { email, password })
                 localStorage.setItem('token', respuesta.data.token)
                 localStorage.setItem('nombre', respuesta.data.nombre)
                 navigate('/transacciones')
