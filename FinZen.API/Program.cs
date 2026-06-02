@@ -31,16 +31,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 
 // 4. CORS (¡Actualizado para permitir Vercel!)
+// 4. CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FinZenPolicy", policy =>
     {
         policy.WithOrigins(
-            "http://localhost:5173",
-            "https://fin-zen-v1-7wlqssdwh-danielsierraaraujos-projects.vercel.app/login"  // ← agrega tu URL de Vercel
-        )
-        .AllowAnyHeader()
-        .AllowAnyMethod();
+                "http://localhost:5173", // Para tus pruebas locales
+                "https://fin-zen-v1-fbk8xyjat-danielsierraaraujos-projects.vercel.app" // Tu URL real de Vercel
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
