@@ -24,7 +24,7 @@ function Transacciones() {
 
     const cargarTransacciones = async () => {
         try {
-            const respuesta = await api.get('/transaccion')
+            const respuesta = await api.get('/api/transaccion')
             setTransacciones(respuesta.data)
         } catch (err) {
             setError('Error al cargar transacciones')
@@ -33,7 +33,7 @@ function Transacciones() {
 
     const cargarCategorias = async () => {
         try {
-            const respuesta = await api.get('/categoria')
+            const respuesta = await api.get('/api/categoria')
             setCategorias(respuesta.data)
         } catch (err) {
             setError('Error al cargar categorías')
@@ -57,9 +57,9 @@ function Transacciones() {
 
         try {
             if (editandoId) {
-                await api.put(`/transaccion/${editandoId}`, datos)
+                await api.put(`/api/transaccion/${editandoId}`, datos)
             } else {
-                await api.post('/transaccion', datos)
+                await api.post('/api/transaccion', datos)
             }
             limpiarFormulario()
             cargarTransacciones()
@@ -79,7 +79,7 @@ function Transacciones() {
     const handleEliminar = async (id) => {
         if (!window.confirm('¿Seguro que deseas eliminar?')) return
         try {
-            await api.delete(`/transaccion/${id}`)
+            await api.delete(`/api/transaccion/${id}`)
             cargarTransacciones()
         } catch (err) {
             setError('Error al eliminar')
@@ -102,7 +102,7 @@ function Transacciones() {
 
     const cargarExcedente = async () => {
         try {
-            const respuesta = await api.get('/transaccion/excedente-mes')
+            const respuesta = await api.get('/api/transaccion/excedente-mes')
             setExcedenteMes(respuesta.data)
         } catch (err) {
             console.log('Error al cargar excedente')
@@ -110,7 +110,6 @@ function Transacciones() {
     }
 
     return (
-    
         <main className="transacciones-container">
             <header className="transacciones-header">
                 <h1>FinZen 💰</h1>
@@ -126,7 +125,6 @@ function Transacciones() {
             </header>
 
             <section className="contenido">
-
                 <section className="formulario-seccion">
                     <h2>{editandoId ? 'Editar Transacción' : 'Nueva Transacción'}</h2>
 
@@ -245,7 +243,6 @@ function Transacciones() {
                         </ul>
                     )}
                 </section>
-
             </section>
 
             <Graficas
