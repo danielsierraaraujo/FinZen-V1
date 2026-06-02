@@ -1,8 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-    // Simplemente llamamos a la variable, sin comillas alrededor y sin 'fetch'
-    baseURL: import.meta.env.VITE_API_URL
+    baseURL: 'https://finzen-v1-production.up.railway.app'  // ← URL de Railway
 })
 
 api.interceptors.request.use((config) => {

@@ -35,9 +35,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("FinZenPolicy", policy =>
     {
-        policy.AllowAnyOrigin()    // Reemplazamos el localhost por AllowAnyOrigin
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy.WithOrigins(
+            "http://localhost:5173",
+            "https://fin-zen-v1-7wlqssdwh-danielsierraaraujos-projects.vercel.app/login"  // ← agrega tu URL de Vercel
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod();
     });
 });
 
