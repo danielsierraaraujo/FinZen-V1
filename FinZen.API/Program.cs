@@ -7,7 +7,7 @@ using FinZen.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Baase de datos
+// 1. Base de datos
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -26,16 +26,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!))
     };
 });
 
-// 4. CORS
+// 4. CORS (¡Actualizado para permitir Vercel!)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FinZenPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.AllowAnyOrigin()    // Reemplazamos el localhost por AllowAnyOrigin
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -46,12 +46,13 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// 6. Middlewares
+// 6. Middlewares (El orden aquí está perfecto)
 app.UseCors("FinZenPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+// 7. Migraciones automáticas
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<FinZen.API.Data.AppDbContext>();
