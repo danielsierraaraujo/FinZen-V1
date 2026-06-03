@@ -43,4 +43,12 @@ namespace FinZen.API.DTOs
         public decimal PorcentajeCompletadoAntes { get; set; }
         public decimal PorcentajeCompletadoDespues { get; set; }
     }
+
+public class TopUsuarioDTO
+{
+    public string NombreUsuario { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public int MetasCompletadas { get; set; }
+    public double PromedioDiasAdelantado { get; set; } 
+}
 }

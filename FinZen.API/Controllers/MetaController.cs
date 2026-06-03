@@ -172,6 +172,11 @@ namespace FinZen.API.Controllers
 
                 meta.MontoActual += monto;
 
+                //si se completa guadamos la fecha en la que se completo
+                if (meta.PorcentajeCompletado >= 100 && !meta.FechaCompletada.HasValue)
+                     meta.FechaCompletada = DateTime.UtcNow;
+                     
+
                 decimal porcentajeDespues = meta.PorcentajeCompletado;
 
                 asignaciones.Add(new AsignacionMetaDTO
