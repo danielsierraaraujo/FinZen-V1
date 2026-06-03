@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FinZen.API.Data;
 using FinZen.API.DTOs;
-using FinZen.API.Models; // <-- El fix del Build
+using FinZen.API.Models;
 
 namespace FinZen.API.Controllers
 {
@@ -19,14 +19,14 @@ namespace FinZen.API.Controllers
             _context = context;
         }
 
-        // GET api/reporte/top-usuarios
+
         [HttpGet("top-usuarios")]
         public async Task<IActionResult> GetTopUsuarios()
         {
             var topUsuarios = await _context.Metas
                 .Where(m =>
                     m.FechaCompletada.HasValue &&
-                    m.MontoActual >= m.MontoObjetivo) // <-- Fix para Entity Framework
+                    m.MontoActual >= m.MontoObjetivo) 
                 .Include(m => m.Usuario)
                 .GroupBy(m => new { m.UsuarioId, m.Usuario.Nombre, m.Usuario.Email })
                 .Select(g => new TopUsuarioDTO
@@ -44,7 +44,7 @@ namespace FinZen.API.Controllers
             return Ok(topUsuarios);
         }
 
-        // POST api/reporte/generar-datos-prueba
+
         [HttpPost("generar-datos-prueba")]
         [AllowAnonymous] 
         public async Task<IActionResult> GenerarDatosPrueba()

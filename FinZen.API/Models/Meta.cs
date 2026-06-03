@@ -9,7 +9,7 @@ namespace FinZen.API.Models
         public decimal MontoActual { get; set; }
         public int Prioridad { get; set; }
         public DateTime FechaLimite { get; set; }
-        public DateTime? FechaCompletada { get; set; }  // ← NUEVO
+        public DateTime? FechaCompletada { get; set; }
         public int UsuarioId { get; set; }
         public Usuario Usuario { get; set; } = null!;
 
@@ -19,7 +19,7 @@ namespace FinZen.API.Models
         public int DiasRestantes =>
             (FechaLimite - DateTime.UtcNow).Days;
 
-        // ← NUEVO: días que se adelantó a la fecha límite
+
         public int? DiasAdelantado =>
             FechaCompletada.HasValue
                 ? (FechaLimite - FechaCompletada.Value).Days
