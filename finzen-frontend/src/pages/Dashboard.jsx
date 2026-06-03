@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import Graficas from '../components/Graficas'
 
+// 1. IMPORTAMOS EL NUEVO COMPONENTE
+import TopUsuariosRanking from '../components/TopUsuariosRanking'
+
 function Dashboard() {
     const [excedenteMes, setExcedenteMes] = useState(null)
     const [metas, setMetas] = useState([])
@@ -87,42 +90,53 @@ function Dashboard() {
                 </section>
             )}
 
-            {/* METAS MÁS URGENTES */}
-            <section className="dashboard-metas">
-                <h3>🔥 Metas más urgentes</h3>
-                {metasUrgentes.length === 0 ? (
-                    <p className="sin-transacciones">No tienes metas activas</p>
-                ) : (
-                    <ul className="lista-metas">
-                        {metasUrgentes.map((meta) => (
-                            <li key={meta.id} className="meta-item">
-                                <section className="meta-info">
-                                    <strong>{meta.nombre}</strong>
-                                    <span className="categoria">
-                                        {meta.diasRestantes} días restantes
-                                    </span>
-                                </section>
-                                <section className="meta-progreso">
-                                    <div className="barra-fondo">
-                                        <div
-                                            className="barra-progreso"
-                                            style={{width: `${Math.min(meta.porcentajeCompletado, 100)}%`}}
-                                        />
-                                    </div>
-                                    <span>${meta.montoActual} / ${meta.montoObjetivo}</span>
-                                    <span>{Math.round(meta.porcentajeCompletado)}%</span>
-                                </section>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-                <button
-                    onClick={() => navigate('/metas')}
-                    className="btn-ver-metas"
-                >
-                    Ver todas las metas →
-                </button>
-            </section>
+            {/* CONTENEDOR FLEX PARA METAS URGENTES + RANKING */}
+            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginBottom: '30px' }}>
+                
+                {/* LADO IZQUIERDO: METAS MÁS URGENTES (Tu código original) */}
+                <section className="dashboard-metas" style={{ flex: '1', minWidth: '300px', margin: '0' }}>
+                    <h3>🔥 Metas más urgentes</h3>
+                    {metasUrgentes.length === 0 ? (
+                        <p className="sin-transacciones">No tienes metas activas</p>
+                    ) : (
+                        <ul className="lista-metas">
+                            {metasUrgentes.map((meta) => (
+                                <li key={meta.id} className="meta-item">
+                                    <section className="meta-info">
+                                        <strong>{meta.nombre}</strong>
+                                        <span className="categoria">
+                                            {meta.diasRestantes} días restantes
+                                        </span>
+                                    </section>
+                                    <section className="meta-progreso">
+                                        <div className="barra-fondo">
+                                            <div
+                                                className="barra-progreso"
+                                                style={{width: `${Math.min(meta.porcentajeCompletado, 100)}%`}}
+                                            />
+                                        </div>
+                                        <span>${meta.montoActual} / ${meta.montoObjetivo}</span>
+                                        <span>{Math.round(meta.porcentajeCompletado)}%</span>
+                                    </section>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                    <button
+                        onClick={() => navigate('/metas')}
+                        className="btn-ver-metas"
+                        style={{ marginTop: '15px' }}
+                    >
+                        Ver todas las metas →
+                    </button>
+                </section>
+
+                {/* LADO DERECHO: CUADRO DE HONOR (Gamificación) */}
+                <section style={{ flex: '1', minWidth: '300px' }}>
+                    <TopUsuariosRanking />
+                </section>
+
+            </div>
 
             {/* GRÁFICAS */}
             <Graficas

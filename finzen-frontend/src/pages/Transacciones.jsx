@@ -112,17 +112,25 @@ function Transacciones() {
     return (
         <main className="transacciones-container">
             <header className="transacciones-header">
-                <h1>FinZen 💰</h1>
-                <section className="header-derecho">
-                    <p>Hola, <strong>{nombre}</strong></p>
-                    <button onClick={() => navigate('/metas')} className="btn-nav">
-                        Metas
-                    </button>
-                    <button onClick={handleLogout} className="btn-logout">
-                        Cerrar Sesión
-                    </button>
-                </section>
-            </header>
+    {/* Si le haces clic al logo, también te lleva al dashboard (súper común en diseño web) */}
+    <h1 style={{ cursor: 'pointer' }} onClick={() => navigate('/dashboard')}>
+        FinZen 💰
+    </h1>
+    
+    <section className="header-derecho">
+        {/* NUEVO BOTÓN PARA IR AL DASHBOARD */}
+        <button onClick={() => navigate('/dashboard')} className="btn-nav">
+            Dashboard
+        </button>
+        
+        <button onClick={() => navigate('/metas')} className="btn-nav">
+            Metas
+        </button>
+        <button onClick={handleLogout} className="btn-logout">
+            Cerrar Sesión
+        </button>
+    </section>
+</header>
 
             <section className="contenido">
                 <section className="formulario-seccion">
