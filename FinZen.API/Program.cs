@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using FinZen.API.Data;
 using FinZen.API.Services;
+using FinZen.API.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // 2. Servicios
 builder.Services.AddScoped<AuthService>();
+
+builder.Services.AddScoped<IMetaRepository, MetaRepository>();
 
 // 3. Autenticación JWT
 var jwtKey = builder.Configuration["Jwt:Key"];

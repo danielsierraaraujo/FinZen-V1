@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using FinZen.API.Data;
 using FinZen.API.DTOs;
+using FinZen.API.Interfaces;
 using FinZen.API.Models;
 using FinZen.API.Services;
-using FinZen.API.Interfaces;
 
 namespace FinZen.API.Controllers
 {
@@ -15,11 +13,11 @@ namespace FinZen.API.Controllers
     [Authorize]
     public class MetaController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IMetaRepository _metaRepository;
 
-        public MetaController(AppDbContext context)
+        public MetaController(IMetaRepository metaRepository)
         {
-            _context = context;
+            _metaRepository = metaRepository;
         }
 
         private int ObtenerUsuarioId()
@@ -28,32 +26,26 @@ namespace FinZen.API.Controllers
             return int.Parse(claim!);
         }
 
-        // GET api/meta
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var usuarioId = ObtenerUsuarioId();
+            var metas = await _metaRepository.GetByUsuarioId(usuarioId);
 
-            var metas = await _context.Metas
-                .Where(m => m.UsuarioId == usuarioId)
-                .Select(m => new MetaResponseDTO
-                {
-                    Id = m.Id,
-                    Nombre = m.Nombre,
-                    Descripcion = m.Descripcion,
-                    MontoObjetivo = m.MontoObjetivo,
-                    MontoActual = m.MontoActual,
-                    Prioridad = m.Prioridad,
-                    FechaLimite = m.FechaLimite,
-                    PorcentajeCompletado = m.PorcentajeCompletado,
-                    DiasRestantes = m.DiasRestantes
-                })
-                .ToListAsync();
-
-            return Ok(metas);
+            return Ok(metas.Select(m => new MetaResponseDTO
+            {
+                Id = m.Id,
+                Nombre = m.Nombre,
+                Descripcion = m.Descripcion,
+                MontoObjetivo = m.MontoObjetivo,
+                MontoActual = m.MontoActual,
+                Prioridad = m.Prioridad,
+                FechaLimite = m.FechaLimite,
+                PorcentajeCompletado = m.PorcentajeCompletado,
+                DiasRestantes = m.DiasRestantes
+            }));
         }
 
-        // POST api/meta
         [HttpPost]
         public async Task<IActionResult> Create(CrearMetaDTO dto)
         {
@@ -70,8 +62,7 @@ namespace FinZen.API.Controllers
                 UsuarioId = usuarioId
             };
 
-            _context.Metas.Add(meta);
-            await _context.SaveChangesAsync();
+            await _metaRepository.Create(meta);
 
             return Ok(new MetaResponseDTO
             {
@@ -87,14 +78,11 @@ namespace FinZen.API.Controllers
             });
         }
 
-        // PUT api/meta/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, CrearMetaDTO dto)
         {
             var usuarioId = ObtenerUsuarioId();
-
-            var meta = await _context.Metas
-                .FirstOrDefaultAsync(m => m.Id == id && m.UsuarioId == usuarioId);
+            var meta = await _metaRepository.GetByIdAndUsuario(id, usuarioId);
 
             if (meta == null)
                 return NotFound(new { mensaje = "Meta no encontrada" });
@@ -103,9 +91,9 @@ namespace FinZen.API.Controllers
             meta.Descripcion = dto.Descripcion;
             meta.MontoObjetivo = dto.MontoObjetivo;
             meta.Prioridad = dto.Prioridad;
-            meta.FechaLimite = dto.FechaLimite;
+            meta.FechaLimite = dto.FechaLimite.ToUniversalTime();
 
-            await _context.SaveChangesAsync();
+            await _metaRepository.Update(meta);
 
             return Ok(new MetaResponseDTO
             {
@@ -121,33 +109,24 @@ namespace FinZen.API.Controllers
             });
         }
 
-        // DELETE api/meta/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var usuarioId = ObtenerUsuarioId();
-
-            var meta = await _context.Metas
-                .FirstOrDefaultAsync(m => m.Id == id && m.UsuarioId == usuarioId);
+            var meta = await _metaRepository.GetByIdAndUsuario(id, usuarioId);
 
             if (meta == null)
                 return NotFound(new { mensaje = "Meta no encontrada" });
 
-            _context.Metas.Remove(meta);
-            await _context.SaveChangesAsync();
-
+            await _metaRepository.Delete(meta);
             return Ok(new { mensaje = "Meta eliminada correctamente" });
         }
 
-        // POST api/meta/asignar
         [HttpPost("asignar")]
         public async Task<IActionResult> Asignar(AsignarExcedenteDTO dto)
         {
             var usuarioId = ObtenerUsuarioId();
-
-            var metas = await _context.Metas
-                .Where(m => m.UsuarioId == usuarioId)
-                .ToListAsync();
+            var metas = await _metaRepository.GetByUsuarioId(usuarioId);
 
             if (!metas.Any())
                 return BadRequest(new { mensaje = "No tienes metas creadas" });
@@ -172,10 +151,8 @@ namespace FinZen.API.Controllers
 
                 meta.MontoActual += monto;
 
-                //si se completa guadamos la fecha en la que se completo
                 if (meta.PorcentajeCompletado >= 100 && !meta.FechaCompletada.HasValue)
-                     meta.FechaCompletada = DateTime.UtcNow;
-                     
+                    meta.FechaCompletada = DateTime.UtcNow;
 
                 decimal porcentajeDespues = meta.PorcentajeCompletado;
 
@@ -187,9 +164,9 @@ namespace FinZen.API.Controllers
                     PorcentajeCompletadoAntes = Math.Round(porcentajeAntes, 2),
                     PorcentajeCompletadoDespues = Math.Round(porcentajeDespues, 2)
                 });
-            }
 
-            await _context.SaveChangesAsync();
+                await _metaRepository.Update(meta);
+            }
 
             return Ok(new ResultadoAsignacionDTO
             {
