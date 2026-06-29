@@ -31,9 +31,6 @@ const TopUsuariosRanking = () => {
 
     if (loading) return <p>Cargando el Cuadro de Honor...</p>;
 
-    // Array de medallas para que se vea genial
-    const medallas = ["🥇", "🥈", "🥉"];
-
     return (
         <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '10px', maxWidth: '400px', backgroundColor: '#f9f9f9' }}>
             <h3 style={{ textAlign: 'center', color: '#333' }}>🏆 Cuadro de Honor FinZen</h3>
