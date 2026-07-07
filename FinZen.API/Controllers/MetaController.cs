@@ -14,10 +14,12 @@ namespace FinZen.API.Controllers
     public class MetaController : ControllerBase
     {
         private readonly IMetaRepository _metaRepository;
+        private readonly IEstrategiaAsignacionFactory _estrategiaFactory;
 
-        public MetaController(IMetaRepository metaRepository)
+        public MetaController(IMetaRepository metaRepository, IEstrategiaAsignacionFactory estrategiaFactory)
         {
             _metaRepository = metaRepository;
+            _estrategiaFactory = estrategiaFactory;
         }
 
         private int ObtenerUsuarioId()
@@ -131,14 +133,7 @@ namespace FinZen.API.Controllers
             if (!metas.Any())
                 return BadRequest(new { mensaje = "No tienes metas creadas" });
 
-            IEstrategiaAsignacion estrategia = dto.Estrategia switch
-            {
-                "prioridad"   => new EstrategiaPorPrioridad(),
-                "urgencia"    => new EstrategiaPorUrgencia(),
-                "equilibrada" => new EstrategiaEquilibrada(),
-                _             => new EstrategiaPorPrioridad()
-            };
-
+            var estrategia = _estrategiaFactory.Crear(dto.Estrategia);
             var asignador = new AsignadorService(estrategia);
             var resultado = asignador.Asignar(metas, dto.Excedente);
 

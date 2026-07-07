@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using FinZen.API.Data;
 using FinZen.API.DTOs;
+using FinZen.API.Interfaces;
 using FinZen.API.Models;
 
 namespace FinZen.API.Controllers
@@ -13,11 +12,11 @@ namespace FinZen.API.Controllers
     [Authorize]
     public class TransaccionController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ITransaccionRepository _transaccionRepository;
 
-        public TransaccionController(AppDbContext context)
+        public TransaccionController(ITransaccionRepository transaccionRepository)
         {
-            _context = context;
+            _transaccionRepository = transaccionRepository;
         }
 
         private int ObtenerUsuarioId()
@@ -30,22 +29,17 @@ namespace FinZen.API.Controllers
         public async Task<IActionResult> GetAll()
         {
             var usuarioId = ObtenerUsuarioId();
+            var transacciones = await _transaccionRepository.GetByUsuarioId(usuarioId);
 
-            var transacciones = await _context.Transacciones
-                .Include(t => t.Categoria)
-                .Where(t => t.UsuarioId == usuarioId)
-                .Select(t => new TransaccionResponseDTO
-                {
-                    Id = t.Id,
-                    Descripcion = t.Descripcion,
-                    Monto = t.Monto,
-                    Tipo = t.Tipo.ToString(),
-                    CategoriaNombre = t.Categoria.Nombre,
-                    Fecha = t.Fecha
-                })
-                .ToListAsync();
-
-            return Ok(transacciones);
+            return Ok(transacciones.Select(t => new TransaccionResponseDTO
+            {
+                Id = t.Id,
+                Descripcion = t.Descripcion,
+                Monto = t.Monto,
+                Tipo = t.Tipo.ToString(),
+                CategoriaNombre = t.Categoria.Nombre,
+                Fecha = t.Fecha
+            }));
         }
 
         [HttpPost]
@@ -53,9 +47,7 @@ namespace FinZen.API.Controllers
         {
             var usuarioId = ObtenerUsuarioId();
 
-            var categoriaExiste = await _context.Categorias
-                .AnyAsync(c => c.Id == dto.CategoriaId);
-
+            var categoriaExiste = await _transaccionRepository.CategoriaExists(dto.CategoriaId);
             if (!categoriaExiste)
                 return BadRequest(new { mensaje = "La categoría no existe" });
 
@@ -68,12 +60,7 @@ namespace FinZen.API.Controllers
                 UsuarioId = usuarioId
             };
 
-            _context.Transacciones.Add(transaccion);
-            await _context.SaveChangesAsync();
-
-            await _context.Entry(transaccion)
-                .Reference(t => t.Categoria)
-                .LoadAsync();
+            await _transaccionRepository.Create(transaccion);
 
             return Ok(new TransaccionResponseDTO
             {
@@ -90,17 +77,12 @@ namespace FinZen.API.Controllers
         public async Task<IActionResult> Update(int id, CrearTransaccionDTO dto)
         {
             var usuarioId = ObtenerUsuarioId();
-
-            var transaccion = await _context.Transacciones
-                .Include(t => t.Categoria)
-                .FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
+            var transaccion = await _transaccionRepository.GetByIdAndUsuario(id, usuarioId);
 
             if (transaccion == null)
                 return NotFound(new { mensaje = "Transacción no encontrada" });
 
-            var categoriaExiste = await _context.Categorias
-                .AnyAsync(c => c.Id == dto.CategoriaId);
-
+            var categoriaExiste = await _transaccionRepository.CategoriaExists(dto.CategoriaId);
             if (!categoriaExiste)
                 return BadRequest(new { mensaje = "La categoría no existe" });
 
@@ -109,7 +91,7 @@ namespace FinZen.API.Controllers
             transaccion.Tipo = Enum.Parse<TipoTransaccion>(dto.Tipo);
             transaccion.CategoriaId = dto.CategoriaId;
 
-            await _context.SaveChangesAsync();
+            await _transaccionRepository.Update(transaccion);
 
             return Ok(new TransaccionResponseDTO
             {
@@ -126,48 +108,43 @@ namespace FinZen.API.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var usuarioId = ObtenerUsuarioId();
-
-            var transaccion = await _context.Transacciones
-                .FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
+            var transaccion = await _transaccionRepository.GetByIdAndUsuario(id, usuarioId);
 
             if (transaccion == null)
                 return NotFound(new { mensaje = "Transacción no encontrada" });
 
-            _context.Transacciones.Remove(transaccion);
-            await _context.SaveChangesAsync();
+            await _transaccionRepository.Delete(transaccion);
 
             return Ok(new { mensaje = "Transacción eliminada correctamente" });
         }
 
         // GET api/transaccion/excedente-mes
-[HttpGet("excedente-mes")]
-public async Task<IActionResult> GetExcedenteMes()
-{
-    var usuarioId = ObtenerUsuarioId();
-    var ahora = DateTime.UtcNow;
-    var inicioMes = new DateTime(ahora.Year, ahora.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        [HttpGet("excedente-mes")]
+        public async Task<IActionResult> GetExcedenteMes()
+        {
+            var usuarioId = ObtenerUsuarioId();
+            var ahora = DateTime.UtcNow;
+            var inicioMes = new DateTime(ahora.Year, ahora.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
-    var transaccionesMes = await _context.Transacciones
-        .Where(t => t.UsuarioId == usuarioId && t.Fecha >= inicioMes)
-        .ToListAsync();
+            var transaccionesMes = await _transaccionRepository.GetByUsuarioIdDesde(usuarioId, inicioMes);
 
-    decimal totalIngresos = transaccionesMes
-        .Where(t => t.Tipo == TipoTransaccion.Ingreso)
-        .Sum(t => t.Monto);
+            decimal totalIngresos = transaccionesMes
+                .Where(t => t.Tipo == TipoTransaccion.Ingreso)
+                .Sum(t => t.Monto);
 
-    decimal totalGastos = transaccionesMes
-        .Where(t => t.Tipo == TipoTransaccion.Gasto)
-        .Sum(t => t.Monto);
+            decimal totalGastos = transaccionesMes
+                .Where(t => t.Tipo == TipoTransaccion.Gasto)
+                .Sum(t => t.Monto);
 
-    decimal excedente = totalIngresos - totalGastos;
+            decimal excedente = totalIngresos - totalGastos;
 
-    return Ok(new
-    {
-        mes = ahora.ToString("MMMM yyyy"),
-        totalIngresos,
-        totalGastos,
-        excedente = excedente > 0 ? excedente : 0
-    });
-}
+            return Ok(new
+            {
+                mes = ahora.ToString("MMMM yyyy"),
+                totalIngresos,
+                totalGastos,
+                excedente = excedente > 0 ? excedente : 0
+            });
+        }
     }
 }

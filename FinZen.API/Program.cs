@@ -4,7 +4,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using FinZen.API.Data;
 using FinZen.API.Services;
+using FinZen.API.Interfaces;
 using FinZen.API.Repositories;
+using FinZen.API.Factories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +17,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // 2. Servicios
 builder.Services.AddScoped<AuthService>();
 
+// 2.1 Repositorios (Repository Pattern)
 builder.Services.AddScoped<IMetaRepository, MetaRepository>();
+builder.Services.AddScoped<ITransaccionRepository, TransaccionRepository>();
+
+// 2.2 Estrategias de asignación registradas por clave (Strategy + Factory Pattern).
+// Agregar una nueva estrategia solo requiere una línea aquí: no exige tocar el Factory ni el controlador (OCP).
+builder.Services.AddKeyedScoped<IEstrategiaAsignacion, EstrategiaPorPrioridad>("prioridad");
+builder.Services.AddKeyedScoped<IEstrategiaAsignacion, EstrategiaPorUrgencia>("urgencia");
+builder.Services.AddKeyedScoped<IEstrategiaAsignacion, EstrategiaEquilibrada>("equilibrada");
+builder.Services.AddScoped<IEstrategiaAsignacionFactory, EstrategiaAsignacionFactory>();
 
 // 3. Autenticación JWT
 var jwtKey = builder.Configuration["Jwt:Key"];
