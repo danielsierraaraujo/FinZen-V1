@@ -1,8 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-    // Le quitamos la variable y le ponemos tu servidor real de Railway
-    baseURL: 'https://finzen-v1-production.up.railway.app'
+    baseURL: import.meta.env.VITE_API_URL || 'https://finzen-api-mh7n.onrender.com'
 })
 
 api.interceptors.request.use((config) => {

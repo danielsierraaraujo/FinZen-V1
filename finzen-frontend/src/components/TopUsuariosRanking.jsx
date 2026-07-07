@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../services/api';
 
 const TopUsuariosRanking = () => {
     const [topUsuarios, setTopUsuarios] = useState([]);
@@ -7,18 +8,8 @@ const TopUsuariosRanking = () => {
     useEffect(() => {
         const fetchTopUsuarios = async () => {
             try {
-                // Asegúrate de poner tu token de autorización si el endpoint lo requiere
-                const token = localStorage.getItem('token'); 
-                const response = await fetch('https://finzen-v1-production.up.railway.app/api/reporte/top-usuarios', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    setTopUsuarios(data);
-                }
+                const response = await api.get('/api/reporte/top-usuarios');
+                setTopUsuarios(response.data);
             } catch (error) {
                 console.error("Error al cargar el ranking:", error);
             } finally {
