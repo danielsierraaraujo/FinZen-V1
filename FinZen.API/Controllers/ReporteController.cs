@@ -85,5 +85,65 @@ namespace FinZen.API.Controllers
 
             return Ok(new { mensaje = "¡Datos inyectados con éxito! Prueba el Top 3." });
         }
+
+        // Cuenta única con transacciones y metas variadas para explorar toda la app sin cargar datos a mano.
+        [HttpPost("generar-cuenta-demo")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GenerarCuentaDemo()
+        {
+            const string email = "demo@finzen.com";
+            const string password = "Demo1234!";
+
+            var existente = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email);
+            if (existente != null)
+            {
+                _context.Transacciones.RemoveRange(_context.Transacciones.Where(t => t.UsuarioId == existente.Id));
+                _context.Metas.RemoveRange(_context.Metas.Where(m => m.UsuarioId == existente.Id));
+                _context.Usuarios.Remove(existente);
+                await _context.SaveChangesAsync();
+            }
+
+            var usuario = new Usuario
+            {
+                Nombre = "Usuario Demo",
+                Email = email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
+            };
+            _context.Usuarios.Add(usuario);
+            await _context.SaveChangesAsync();
+
+            var ahora = DateTime.UtcNow;
+            var inicioMes = new DateTime(ahora.Year, ahora.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var diasDisponibles = Math.Max((int)(ahora - inicioMes).TotalDays, 0);
+            DateTime FechaDemo(int pasoDeseado) => inicioMes.AddDays(Math.Min(pasoDeseado, diasDisponibles));
+
+            var transacciones = new List<Transaccion>
+            {
+                new Transaccion { UsuarioId = usuario.Id, Descripcion = "Salario", Monto = 1500, Tipo = TipoTransaccion.Ingreso, CategoriaId = 7, Fecha = FechaDemo(1) },
+                new Transaccion { UsuarioId = usuario.Id, Descripcion = "Supermercado", Monto = 180, Tipo = TipoTransaccion.Gasto, CategoriaId = 1, Fecha = FechaDemo(2) },
+                new Transaccion { UsuarioId = usuario.Id, Descripcion = "Proyecto freelance", Monto = 300, Tipo = TipoTransaccion.Ingreso, CategoriaId = 8, Fecha = FechaDemo(3) },
+                new Transaccion { UsuarioId = usuario.Id, Descripcion = "Bus y taxi", Monto = 80, Tipo = TipoTransaccion.Gasto, CategoriaId = 2, Fecha = FechaDemo(4) },
+                new Transaccion { UsuarioId = usuario.Id, Descripcion = "Consulta médica", Monto = 45, Tipo = TipoTransaccion.Gasto, CategoriaId = 4, Fecha = FechaDemo(5) },
+                new Transaccion { UsuarioId = usuario.Id, Descripcion = "Cine", Monto = 60, Tipo = TipoTransaccion.Gasto, CategoriaId = 3, Fecha = FechaDemo(6) },
+                new Transaccion { UsuarioId = usuario.Id, Descripcion = "Restaurante", Monto = 40, Tipo = TipoTransaccion.Gasto, CategoriaId = 1, Fecha = FechaDemo(7) },
+                new Transaccion { UsuarioId = usuario.Id, Descripcion = "Curso online", Monto = 100, Tipo = TipoTransaccion.Gasto, CategoriaId = 5, Fecha = FechaDemo(8) },
+                new Transaccion { UsuarioId = usuario.Id, Descripcion = "Internet y luz", Monto = 150, Tipo = TipoTransaccion.Gasto, CategoriaId = 6, Fecha = FechaDemo(9) },
+                new Transaccion { UsuarioId = usuario.Id, Descripcion = "Regalo de cumpleaños", Monto = 40, Tipo = TipoTransaccion.Gasto, CategoriaId = 10, Fecha = FechaDemo(diasDisponibles) },
+            };
+            _context.Transacciones.AddRange(transacciones);
+
+            var metas = new List<Meta>
+            {
+                new Meta { UsuarioId = usuario.Id, Nombre = "Fondo de Emergencia", Descripcion = "Colchón para imprevistos", MontoObjetivo = 2000, MontoActual = 2000, Prioridad = 5, FechaLimite = ahora.AddDays(-1), FechaCompletada = ahora.AddDays(-10) },
+                new Meta { UsuarioId = usuario.Id, Nombre = "Vacaciones", Descripcion = "Viaje de fin de año", MontoObjetivo = 1500, MontoActual = 600, Prioridad = 3, FechaLimite = ahora.AddDays(60) },
+                new Meta { UsuarioId = usuario.Id, Nombre = "Laptop nueva", Descripcion = "Para el trabajo", MontoObjetivo = 1200, MontoActual = 300, Prioridad = 4, FechaLimite = ahora.AddDays(30) },
+                new Meta { UsuarioId = usuario.Id, Nombre = "Curso de inglés", Descripcion = "Certificación B2", MontoObjetivo = 500, MontoActual = 450, Prioridad = 2, FechaLimite = ahora.AddDays(10) },
+            };
+            _context.Metas.AddRange(metas);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { mensaje = $"Cuenta demo lista: {email} / {password}" });
+        }
     }
 }

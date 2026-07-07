@@ -20,9 +20,9 @@ function Dashboard() {
     const cargarDatos = async () => {
         try {
             const [excedente, metasRes, transRes] = await Promise.all([
-                api.get('/transaccion/excedente-mes'),
-                api.get('/meta'),
-                api.get('/transaccion')
+                api.get('/api/transaccion/excedente-mes'),
+                api.get('/api/meta'),
+                api.get('/api/transaccion')
             ])
             setExcedenteMes(excedente.data)
             setMetas(metasRes.data)

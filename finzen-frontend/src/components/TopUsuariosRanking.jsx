@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 
+const medallas = ['🥇', '🥈', '🥉'];
+
 const TopUsuariosRanking = () => {
     const [topUsuarios, setTopUsuarios] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -38,7 +40,7 @@ const TopUsuariosRanking = () => {
                         backgroundColor: index === 0 ? '#fffbea' : 'transparent' // Resalta al ganador en amarillo
                     }}>
                         <div>
-                            <span style={{ fontSize: '24px', marginRight: '10px' }}>{medallas[index]}</span>
+                            <span style={{ fontSize: '24px', marginRight: '10px' }}>{medallas[index] || `#${index + 1}`}</span>
                             <strong>{usuario.nombreUsuario}</strong>
                             <div style={{ fontSize: '12px', color: '#888', marginLeft: '35px' }}>
                                 {usuario.metasCompletadas} metas logradas

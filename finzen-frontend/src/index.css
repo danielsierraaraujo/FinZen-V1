@@ -112,6 +112,24 @@ body {
     margin-bottom: 16px;
 }
 
+/* ===== LINK AUXILIAR (login <-> registro) ===== */
+.link-msg {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.link-msg a {
+    color: #2563eb;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.link-msg a:hover {
+    text-decoration: underline;
+}
+
 /* ===== TRANSACCIONES ===== */
 .transacciones-container {
     min-height: 100vh;
